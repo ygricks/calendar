@@ -3,6 +3,52 @@ from dateutil.easter import easter as get_easter
 from datetime import date, timedelta
 
 
+class ColoredDay:
+	colors = {
+		'black': 30,
+		'red': 31,
+		'green': 32,
+		'yellow': 33,
+		'blue': 34,
+		'pink': 35,
+		'sky': 36,
+		'white': 37,
+	}
+	backgrounds = {
+		'black': 40,
+		'red': 41,
+		'green': 42,
+		'yellow': 43,
+		'blue': 44,
+		'pink': 45,
+		'sky': 46,
+		'white': 47,
+		'grey': 90,
+	}
+
+	def __init__(self, day, **kwargs):
+		self.day = day
+		self.color = self.background = None
+		if len(kwargs):
+			self.let(**kwargs)
+
+	def let(self, **kwargs):
+		is_color = 'color' in kwargs and kwargs['color'] in self.colors
+		self.color = self.colors[kwargs['color']] if is_color else None
+		is_background = 'background' in kwargs and kwargs['background'] in self.backgrounds
+		self.background = self.backgrounds[kwargs['background']] if is_background else None
+		self.style = kwargs['style'] if 'style' in kwargs else 0
+
+	def __repr__(self):
+		if not self.color and not self.background:
+			return self.day
+		self.color = self.color if self.color else self.colors['white']
+		self.background = self.background if self.background else self.backgrounds['black']
+		if not self.style:
+			self.style = 1 if self.color == self.colors['white'] or self.backgrounds == self.backgrounds['black'] else 0
+		return '\x1b[%d;%d;%dm%s\x1b[0m' % (self.style, self.color, self.background, self.day)
+
+
 def get_holydays(year):
 	holydays = {
 		# anul nou
@@ -44,18 +90,11 @@ def month(year, month, today):
 		'Iulie', 'August', 'Septembrie',
 		'Octombrie', 'Noiembrie', 'Decembrie'
 	]
-	holydays = get_holydays(year)
-	style = {
-		# weekend
-		'w': '\x1b[2;30;90m%s\x1b[0m',
-		# holidays
-		'h': '\x1b[2;30;43m%s\x1b[0m',
-		# past
-		'p': '\x1b[2;35;40m%s\x1b[0m',
-	}
-	week_name = 'Lu Ma Mi Jo Vi Si Du'
-	week_start, week_days = monthrange(year, month)
 
+	week_name = 'Lu Ma Mi Jo Vi Si Du'
+	
+	holydays = get_holydays(year)
+	week_start, week_days = monthrange(year, month)
 	title = '%s %s' % (months[month], year)
 	title_len = len(week_name) // 2 + len(title) // 2
 	lines = [title.rjust(title_len), week_name]
@@ -63,20 +102,26 @@ def month(year, month, today):
 
 	for week_day in range(1, week_days + 1):
 		day = date(year, month, week_day)
-		day_str = str(day.day).rjust(2)
+		str_day = str(day.day).rjust(2)
+		cd = ColoredDay(str_day)
 
 		if day in holydays:
-			day_str = style['h'] % (day_str)
+			cd.let(background="yellow")
 		elif day.weekday() > 4:
-			day_str = style['w'] % (day_str)
-		elif day <= today:
-			day_str = style['p'] % (day_str)
+			cd.let(background="grey")
+		elif day < today:
+			cd.let(color="pink")
 
-		line.append(day_str)
+		if day == today:
+			cd.let(color="red", style=1)
+
+		line.append(str(cd))
 
 		if day.weekday() == 6:
 			lines.append(' '.join(line))
 			line = []
+	if len(line):
+		lines.append(' '.join(line))
 	return lines
 
 
