@@ -99,21 +99,29 @@ def month(year, month, today):
 	title_len = len(week_name) // 2 + len(title) // 2
 	lines = [title.rjust(title_len), week_name]
 	line = ['  ' for i in range(week_start)]
+	free = []
 
 	for week_day in range(1, week_days + 1):
 		day = date(year, month, week_day)
 		str_day = str(day.day).rjust(2)
 		cd = ColoredDay(str_day)
+		is_busy = True
 
 		if day in holydays:
 			cd.let(background="yellow")
+			is_busy = False
 		elif day.weekday() > 4:
 			cd.let(background="grey")
+			is_busy = False
 		elif day < today:
 			cd.let(color="pink")
+			is_busy = False
 
 		if day == today:
 			cd.let(color="red", style=1)
+
+		if is_busy:
+			free.append(str_day)
 
 		line.append(str(cd))
 
@@ -122,6 +130,11 @@ def month(year, month, today):
 			line = []
 	if len(line):
 		lines.append(' '.join(line))
+	if len(free):
+		lines.append('')
+		lines.append('more working days: %d' % len(free))
+		lines.append(' '.join(free))
+		lines.append(' '.join([str(i).rjust(2) for i in range(len(free), 0, -1)]))
 	return lines
 
 
