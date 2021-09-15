@@ -3,6 +3,8 @@ from dateutil.easter import easter as get_easter
 from datetime import date, timedelta
 
 
+# console colors 
+# https://stackoverflow.com/questions/287871/how-to-print-colored-text-to-the-terminal
 class ColoredDay:
 	colors = {
 		'black': 30,
@@ -138,9 +140,7 @@ def month(year, month, today):
 	return lines
 
 
-# console colors 
-# https://stackoverflow.com/questions/287871/how-to-print-colored-text-to-the-terminal
-
-today = date.today()
-m = month(today.year, today.month, today)
-print("\n".join(m))
+if __name__ == '__main__':
+	today = date.today()
+	m = month(today.year, today.month, today)
+	print("\n".join(m))
