@@ -92,14 +92,17 @@ def month(year, month, today):
 		'Iulie', 'August', 'Septembrie',
 		'Octombrie', 'Noiembrie', 'Decembrie'
 	]
-
-	week_name = 'Lu Ma Mi Jo Vi Si Du'
+	day_names = [
+		'luni', 'marti', 'miercuri', 'joi',
+		'vineri', 'simbata', 'duminica'
+	]
+	week_title = ' '.join([n.capitalize()[:2] for n in day_names])
 	
 	holydays = get_holydays(year)
 	week_start, week_days = monthrange(year, month)
 	title = '%s %s' % (months[month], year)
-	title_len = len(week_name) // 2 + len(title) // 2
-	lines = [title.rjust(title_len), week_name]
+	title_len = len(week_title) // 2 + len(title) // 2
+	lines = ['',title.rjust(title_len), week_title]
 	line = ['  ' for i in range(week_start)]
 	free = []
 
@@ -123,7 +126,7 @@ def month(year, month, today):
 			cd.let(color="red", style=1)
 
 		if is_busy:
-			free.append(str_day)
+			free.append(day)
 
 		line.append(str(cd))
 
@@ -135,12 +138,17 @@ def month(year, month, today):
 	if len(free):
 		lines.append('')
 		lines.append('more working days: %d' % len(free))
-		lines.append(' '.join(free))
-		lines.append(' '.join([str(i).rjust(2) for i in range(len(free), 0, -1)]))
+		lines.append('')
+		lines.append(' '.join([day_names[day.weekday()][:2] for day in free]))
+		lines.append('--' * len(free))
+		lines.append(''.join([str(day.day).rjust(2) for day in free]))
+		lines.append(''.join([str(i).rjust(2) for i in range(len(free), 0, -1)]))
 	return lines
 
 
 if __name__ == '__main__':
 	today = date.today()
 	m = month(today.year, today.month, today)
+	# m = month(today.year, 1, today)
+	m = ['  ' + n for n in m]
 	print("\n".join(m))
